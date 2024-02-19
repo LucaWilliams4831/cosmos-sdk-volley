@@ -18,7 +18,7 @@ import (
 )
 const (
     rpcURL       = "https://test-rpc.volleychain.com"
-    contractAddr = "0x98C9a8548AD6b3D743804DadF7909e154fAea588"
+    contractAddr = "0x05A1e674E0B8FeF9B4EcD7E8bfafc7D0f1C319cb"
     contractABI  = `[
 		{
 			"inputs": [
