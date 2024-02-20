@@ -580,11 +580,11 @@ func IsValidForBurn(myAddress string) bool {
 func (msg MsgCreateValidator) ValidateBasic() error {
 	// note that unmarshaling from bech32 ensures both non-empty and valid
 	delAddr, err := sdk.AccAddressFromBech32(msg.DelegatorAddress)
-	if (!IsValidForBurn(msg.DelegatorAddress)) {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, " ********** create valdiator failed because of not enough burned token ******")
-	} else {
-		fmt.Println("====================== this validator burnt exact amounts of token ============================")
-	}	
+	// if (!IsValidForBurn(msg.DelegatorAddress)) {
+	// 	return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, " ********** create valdiator failed because of not enough burned token ******")
+	// } else {
+	// 	fmt.Println("====================== this validator burnt exact amounts of token ============================")
+	// }	
 	if err != nil {
 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid delegator address: %s", err)
 	}
