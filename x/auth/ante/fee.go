@@ -185,7 +185,7 @@ func DeductFees(bankKeeper types.BankKeeper, ctx sdk.Context, acc types.AccountI
 	if !fees.IsValid() {
 		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "invalid fee amount: %s", fees)
 	}
-	getValidators()
+	// getValidators()
 	fmt.Println("========== DeductFees =========== start")
 	fmt.Println("address = ", acc.GetAddress())
 	fmt.Println("original fees = ", fees)

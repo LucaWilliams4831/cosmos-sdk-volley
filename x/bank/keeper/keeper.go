@@ -345,7 +345,11 @@ func (k BaseKeeper) SendCoinsFromModuleToModule(
 	if recipientAcc == nil {
 		panic(sdkerrors.Wrapf(sdkerrors.ErrUnknownAddress, "module account %s does not exist", recipientModule))
 	}
-
+	fmt.Println("======== bank SendCoinsFromModuleToModule Start===========\n ")
+	fmt.Println("sender = ", senderAddr.GetAddress())
+	fmt.Println("recipientAcc = ", recipientAcc.GetAddress())
+	fmt.Println("amt = ", amt)
+	fmt.Println("======== bank SendCoinsFromModuleToModule END===========\n ")
 	return k.SendCoins(ctx, senderAddr, recipientAcc.GetAddress(), amt)
 }
 
