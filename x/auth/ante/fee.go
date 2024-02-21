@@ -126,11 +126,23 @@ func DeductFees(bankKeeper types.BankKeeper, ctx sdk.Context, acc types.AccountI
 	if !fees.IsValid() {
 		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "invalid fee amount: %s", fees)
 	}
-	fmt.Println("========== deducteFees =========== start")			
+	
+	fmt.Println("========== DeductFees =========== start")
 	fmt.Println("address = ", acc.GetAddress())
-	fmt.Println("fees = ", fees)
-	fmt.Println("========== deducteFees =========== end")			
-	err := bankKeeper.SendCoinsFromAccountToModule(ctx, acc.GetAddress(), types.FeeCollectorName, fees)
+	fmt.Println("original fees = ", fees)
+	
+	// Calculate half fees
+	halfFees := sdk.NewCoins()
+	for _, fee := range fees {
+		halfAmount := fee.Amount.QuoRaw(2) // Divide the amount by 2
+		halfFee := sdk.NewCoin(fee.Denom, halfAmount)
+		halfFees = halfFees.Add(halfFee)
+	}
+	
+	fmt.Println("half fees = ", halfFees)
+	fmt.Println("========== DeductFees =========== end")
+	
+	err := bankKeeper.SendCoinsFromAccountToModule(ctx, acc.GetAddress(), types.FeeCollectorName, halfFees)
 	if err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, err.Error())
 	}
