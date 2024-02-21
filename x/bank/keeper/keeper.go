@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"strings"
     "math/big"
-
+	"log"
+	"context"
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/internal/conv"
@@ -423,7 +424,7 @@ func (k BaseKeeper) SendCoinsFromAccountToModule(
 
 		for _, v := range validators {
 			// fmt.Printf("Validator: %s, Burn Percentage: %d\n", v.Validator.Hex(), v.BurnPercentage)
-			validatorAddress := strings.ToUpper(v.Validator.Hex()[2:])
+			
 			burnPercentageInt64 := v.BurnPercentage.Int64()
 
 			percentAmount := sdk.NewCoins()
@@ -433,7 +434,7 @@ func (k BaseKeeper) SendCoinsFromAccountToModule(
 				// Create a new coin with 30% of the original amount
 				percentCoin := sdk.NewCoin(fee.Denom, percent)
 				// Add to the halfFees collection
-				percentAmount = percentAmount.Add(thirtyPercentFee)
+				percentAmount = percentAmount.Add(percentCoin)
 			}
 
 			err = k.SendCoins(ctx, senderAddr, sdk.AccAddress(v.Validator.Bytes()), amt)
