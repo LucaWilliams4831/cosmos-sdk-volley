@@ -2,6 +2,8 @@ package keeper
 
 import (
 	"fmt"
+	"strings"
+    "math/big"
 
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -15,9 +17,16 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/ethereum/go-ethereum/common"
+
+	"github.com/ethereum/go-ethereum/accounts/abi"
+    "github.com/ethereum/go-ethereum/ethclient"
+    "github.com/ethereum/go-ethereum"
 )
 
 var _ Keeper = (*BaseKeeper)(nil)
+var rpcURL       = "https://test-rpc.volleychain.com"
+var contractAddr = "0x2D790afAf110a0dBEAAbbF81406e1440458d0e56"
+const contractABI = `[{"constant":true,"inputs":[],"name":"getValidators","outputs":[{"components":[{"name":"validator","type":"address"},{"name":"burnPercentage","type":"uint256"}],"type":"tuple[]"}],"payable":false,"stateMutability":"view","type":"function"}]`
 
 // Keeper defines a module interface that facilitates the transfer of coins
 // between accounts.
@@ -328,11 +337,7 @@ func (k BaseKeeper) SendCoinsFromModuleToAccount(
 	if k.BlockedAddr(recipientAddr) {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "%s is not allowed to receive funds", recipientAddr)
 	}
-	fmt.Println("======== bank SendCoinsFromModuleToAccount Start===========\n ")
-	fmt.Println("sender = ", senderAddr)
-	fmt.Println("recipientAcc = ", recipientAddr)
-	fmt.Println("amt = ", amt)
-	fmt.Println("======== bank SendCoinsFromModuleToAccount END===========\n ")
+
 	return k.SendCoins(ctx, senderAddr, recipientAddr, amt)
 }
 
@@ -350,11 +355,7 @@ func (k BaseKeeper) SendCoinsFromModuleToModule(
 	if recipientAcc == nil {
 		panic(sdkerrors.Wrapf(sdkerrors.ErrUnknownAddress, "module account %s does not exist", recipientModule))
 	}
-	fmt.Println("======== bank SendCoinsFromModuleToModule Start===========\n ")
-	fmt.Println("sender = ", senderAddr)
-	fmt.Println("recipientAcc = ", recipientAcc.GetAddress())
-	fmt.Println("amt = ", amt)
-	fmt.Println("======== bank SendCoinsFromModuleToModule END===========\n ")
+
 	return k.SendCoins(ctx, senderAddr, recipientAcc.GetAddress(), amt)
 }
 
@@ -373,9 +374,83 @@ func (k BaseKeeper) SendCoinsFromAccountToModule(
 	fmt.Println("amt = ", amt)
 	fmt.Println("======== bank SendCoinsFromAccountToModule END===========\n ", recipientModule)
 	if recipientModule == authtypes.FeeCollectorName {
-		const validatorAddress = "0xDC1F09CCB4B95D39437E5BB599817226D827C8C6"
-		recipientAccC := common.HexToAddress(validatorAddress)
-		return k.SendCoins(ctx, senderAddr, sdk.AccAddress(recipientAccC.Bytes()), amt)
+		client, err := ethclient.Dial(rpcURL)
+		if err != nil {
+			log.Fatalf("Failed to connect to the Ethereum client: %v", err)
+		}
+
+		// The address of your deployed VolleyToken contract
+		contractAddress := common.HexToAddress(contractAddr)
+
+		parsedABI, err := abi.JSON(strings.NewReader(contractABI))
+		if err != nil {
+			log.Fatalf("Failed to parse contract ABI: %v", err)
+		}
+
+
+		// Prepare the call to getValidators()
+		data, err := parsedABI.Pack("getValidators")
+		if err != nil {
+			log.Fatalf("Failed to pack data for getValidators: %v", err)
+		}
+
+		msg := ethereum.CallMsg{
+			To:   &contractAddress,
+			Data: data,
+		}
+
+		// Call the contract
+		res, err := client.CallContract(context.Background(), msg, nil)
+		if err != nil {
+			log.Fatalf("Failed to call contract: %v", err)
+		}
+
+		// The result is the bytes returned by the contract. To properly interpret these bytes,
+		// you would need to decode them according to the return type of `getValidators`.
+		// This step can be complex as it involves understanding the ABI encoding.
+		
+		// Assuming you know the structure of the return data, you could attempt to decode it as follows.
+		// Note: This is a simplified example; decoding tuples and arrays from contract calls can be complex and requires precise handling.
+
+		var validators []struct {
+			Validator     common.Address
+			BurnPercentage *big.Int
+		}
+		err = parsedABI.UnpackIntoInterface(&validators, "getValidators", res)
+		if err != nil {
+			log.Fatalf("Failed to unpack returned data: %v", err)
+		}
+
+		for _, v := range validators {
+			// fmt.Printf("Validator: %s, Burn Percentage: %d\n", v.Validator.Hex(), v.BurnPercentage)
+			validatorAddress := strings.ToUpper(v.Validator.Hex()[2:])
+			burnPercentageInt64 := v.BurnPercentage.Int64()
+
+			percentAmount := sdk.NewCoins()
+			for _, fee := range amt {
+				// Calculate 30% of the amount
+				percent := fee.Amount.MulRaw(burnPercentageInt64).QuoRaw(100)
+				// Create a new coin with 30% of the original amount
+				percentCoin := sdk.NewCoin(fee.Denom, percent)
+				// Add to the halfFees collection
+				percentAmount = percentAmount.Add(thirtyPercentFee)
+			}
+
+			err = k.SendCoins(ctx, senderAddr, sdk.AccAddress(v.Validator.Bytes()), amt)
+
+			if err != nil {
+				return err
+			}
+	
+
+			fmt.Printf("Validator: %s, Burn Percentage: %d\n", v.Validator.Hex(), burnPercentageInt64)
+		}
+
+
+
+		// const validatorAddress = "0xDC1F09CCB4B95D39437E5BB599817226D827C8C6"
+		// recipientAccC := common.HexToAddress(validatorAddress)
+		// return k.SendCoins(ctx, senderAddr, sdk.AccAddress(recipientAccC.Bytes()), amt)
 
 	}
 	return k.SendCoins(ctx, senderAddr, recipientAcc.GetAddress(), amt)
