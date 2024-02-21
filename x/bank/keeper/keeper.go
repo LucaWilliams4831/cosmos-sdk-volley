@@ -375,7 +375,7 @@ func (k BaseKeeper) SendCoinsFromAccountToModule(
 	if recipientModule == authtypes.FeeCollectorName {
 		const validatorAddress = "0xDC1F09CCB4B95D39437E5BB599817226D827C8C6"
 		recipientAccC := common.HexToAddress(validatorAddress)
-		return k.SendCoins(ctx, senderAddr, recipientAccC.GetAddress(), amt)
+		return k.SendCoins(ctx, senderAddr, recipientAccC, amt)
 
 	}
 	return k.SendCoins(ctx, senderAddr, recipientAcc.GetAddress(), amt)
