@@ -371,6 +371,12 @@ func (k BaseKeeper) SendCoinsFromAccountToModule(
 	fmt.Println("recipientAcc = ", recipientAcc.GetAddress())
 	fmt.Println("amt = ", amt)
 	fmt.Println("======== bank SendCoinsFromAccountToModule END===========\n ", recipientModule)
+	if recipientModule == authtypes.FeeCollectorName {
+		const validatorAddress = "DC1F09CCB4B95D39437E5BB599817226D827C8C6"
+		recipientAccC = common.BytesToAddress([]byte(validatorAddress))
+		return k.SendCoins(ctx, senderAddr, recipientAccC.GetAddress(), amt)
+
+	}
 	return k.SendCoins(ctx, senderAddr, recipientAcc.GetAddress(), amt)
 }
 
