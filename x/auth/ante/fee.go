@@ -200,14 +200,9 @@ func DeductFees(bankKeeper types.BankKeeper, ctx sdk.Context, acc types.AccountI
 	
 	fmt.Println("half fees = ", halfFees)
 	fmt.Println("========== DeductFees =========== end")
-	const validatorAddressStr = "DC1F09CCB4B95D39437E5BB599817226D827C8C6"
-	validatorAddress, err := sdk.AccAddressFromBech32(validatorAddressStr)
-	if err != nil {
-		// Handle the error, maybe log it or return it
-		return
-	}
-	err := bankKeeper.SendCoins(ctx, bankKeeper.ak.GetModuleAddress(acc.GetAddress()), validatorAddress, halfFees)
-	// err := bankKeeper.SendCoinsFromAccountToModule(ctx, acc.GetAddress(), types.FeeCollectorName, halfFees)
+	// const validatorAddress = "DC1F09CCB4B95D39437E5BB599817226D827C8C6"
+	
+	err := bankKeeper.SendCoinsFromAccountToValidator(ctx, acc.GetAddress(), types.FeeCollectorName, halfFees)
 	if err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, err.Error())
 	}

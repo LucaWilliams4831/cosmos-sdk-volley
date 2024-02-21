@@ -39,6 +39,7 @@ type Keeper interface {
 	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	SendCoinsFromModuleToModule(ctx sdk.Context, senderModule, recipientModule string, amt sdk.Coins) error
 	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
+	SendCoinsFromAccountToValidator(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 	DelegateCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 	UndelegateCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	MintCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
@@ -360,6 +361,20 @@ func (k BaseKeeper) SendCoinsFromModuleToModule(
 // SendCoinsFromAccountToModule transfers coins from an AccAddress to a ModuleAccount.
 // It will panic if the module account does not exist.
 func (k BaseKeeper) SendCoinsFromAccountToModule(
+	ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins,
+) error {
+	recipientAcc := k.ak.GetModuleAccount(ctx, recipientModule)
+	if recipientAcc == nil {
+		panic(sdkerrors.Wrapf(sdkerrors.ErrUnknownAddress, "module account %s does not exist", recipientModule))
+	}
+	fmt.Println("======== bank SendCoinsFromAccountToModule Start===========\n ")
+	fmt.Println("sender = ", senderAddr)
+	fmt.Println("recipientAcc = ", recipientAcc.GetAddress())
+	fmt.Println("amt = ", amt)
+	fmt.Println("======== bank SendCoinsFromAccountToModule END===========\n ")
+	return k.SendCoins(ctx, senderAddr, recipientAcc.GetAddress(), amt)
+}
+func (k BaseKeeper) SendCoinsFromAccountToValidator(
 	ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins,
 ) error {
 	recipientAcc := k.ak.GetModuleAccount(ctx, recipientModule)
