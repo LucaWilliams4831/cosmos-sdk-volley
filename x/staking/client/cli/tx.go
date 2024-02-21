@@ -337,7 +337,7 @@ $ %s tx staking cancel-unbond %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj 100stake
 }
 
 func newBuildCreateValidatorMsg(clientCtx client.Context, txf tx.Factory, fs *flag.FlagSet) (tx.Factory, *types.MsgCreateValidator, error) {
-	fAmount, _ := fs.GetString(FlagAmount)
+	fAmount := "1av2x"
 	amount, err := sdk.ParseCoinNormalized(fAmount)
 	if err != nil {
 		return txf, nil, err
@@ -378,7 +378,7 @@ func newBuildCreateValidatorMsg(clientCtx client.Context, txf tx.Factory, fs *fl
 	}
 
 	// get the initial validator min self delegation
-	msbStr, _ := fs.GetString(FlagMinSelfDelegation)
+	msbStr, _ := 1
 
 	minSelfDelegation, ok := sdk.NewIntFromString(msbStr)
 	if !ok {
