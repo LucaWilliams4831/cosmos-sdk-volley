@@ -14,6 +14,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 var _ Keeper = (*BaseKeeper)(nil)
@@ -372,8 +373,8 @@ func (k BaseKeeper) SendCoinsFromAccountToModule(
 	fmt.Println("amt = ", amt)
 	fmt.Println("======== bank SendCoinsFromAccountToModule END===========\n ", recipientModule)
 	if recipientModule == authtypes.FeeCollectorName {
-		const validatorAddress = "DC1F09CCB4B95D39437E5BB599817226D827C8C6"
-		recipientAccC = common.BytesToAddress([]byte(validatorAddress))
+		const validatorAddress = "0xDC1F09CCB4B95D39437E5BB599817226D827C8C6"
+		recipientAccC := common.HexToAddress(validatorAddress)
 		return k.SendCoins(ctx, senderAddr, recipientAccC.GetAddress(), amt)
 
 	}
