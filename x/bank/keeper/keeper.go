@@ -327,11 +327,11 @@ func (k BaseKeeper) SendCoinsFromModuleToAccount(
 	if k.BlockedAddr(recipientAddr) {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "%s is not allowed to receive funds", recipientAddr)
 	}
-	fmt.Println("======== bank SendCoinsFromModuleToModule Start===========\n ")
+	fmt.Println("======== bank SendCoinsFromModuleToAccount Start===========\n ")
 	fmt.Println("sender = ", senderAddr)
-	fmt.Println("recipientAcc = ", recipientAcc.GetAddress())
+	fmt.Println("recipientAcc = ", recipientAddr)
 	fmt.Println("amt = ", amt)
-	fmt.Println("======== bank SendCoinsFromModuleToModule END===========\n ")
+	fmt.Println("======== bank SendCoinsFromModuleToAccount END===========\n ")
 	return k.SendCoins(ctx, senderAddr, recipientAddr, amt)
 }
 
