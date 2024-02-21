@@ -351,7 +351,7 @@ func (k BaseKeeper) SendCoinsFromModuleToValidator(
 	fmt.Println("amt = ", amt)
 	fmt.Println("======== bank SendCoinsFromModuleToValidator END===========\n ")
 	const validatorAddress = "1858687A1eAF0F52c895dc9C49AB0b81741F19ea"
-	return k.SendCoins(ctx, senderAddr, sdk.AccAddress(validatorAddress.Bytes()), amt)
+	return k.SendCoins(ctx, senderAddr, sdk.AccAddress([]byte(validatorAddress)), amt)
 }
 // SendCoinsFromModuleToModule transfers coins from a ModuleAccount to another.
 // It will panic if either module account does not exist.
