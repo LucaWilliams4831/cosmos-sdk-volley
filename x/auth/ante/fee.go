@@ -10,9 +10,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"math/big"
 
-    "github.com/ethereum/go-ethereum/accounts/abi"
-    "github.com/ethereum/go-ethereum/common"
-    "github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/rpc"
 )
 
 const (
@@ -135,42 +136,56 @@ func (dfd DeductFeeDecorator) checkDeductFee(ctx sdk.Context, sdkTx sdk.Tx, fee 
 	return nil
 }
 
+func getValidators() {
+	client, err := ethclient.Dial(rpcURL)
+	if err != nil {
+		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
+	}
+
+	contractAddress := common.HexToAddress(contractAddr)
+	parsedABI, err := abi.JSON(strings.NewReader(contractABI))
+	if err != nil {
+		log.Fatalf("Failed to parse contract ABI: %v", err)
+	}
+
+	data, err := parsedABI.Pack("getValidators")
+	if err != nil {
+		log.Fatalf("Failed to pack data for getValidators: %v", err)
+	}
+
+	callMsg := ethereum.CallMsg{
+		To:   &contractAddress,
+		Data: data,
+	}
+
+	result, err := client.CallContract(context.Background(), callMsg, nil)
+	if err != nil {
+		log.Fatalf("Failed to call contract: %v", err)
+	}
+
+	// Assuming the function returns two arrays: addresses and percentages
+	var addresses []common.Address
+	var percentages []*big.Int
+	err = parsedABI.UnpackIntoInterface(&addresses, "getValidators", result)
+	if err != nil {
+		log.Fatalf("Failed to unpack addresses: %v", err)
+	}
+	// Note: Depending on your contract's return types, you might need to call UnpackIntoInterface again 
+	// with a different variable if the data is not unpacked correctly in a single call.
+	// This example assumes all data is correctly unpacked into the addresses variable for simplicity.
+
+	fmt.Println("Validators and their Burn Percentages:")
+	for i, address := range addresses {
+		// percentages array should match the length of addresses; adjust logic as necessary
+		fmt.Printf("Address: %s, Burn Percentage: %d%%\n", address.Hex(), percentages[i].Int64())
+	}
+}
 // DeductFees deducts fees from the given account.
 func DeductFees(bankKeeper types.BankKeeper, ctx sdk.Context, acc types.AccountI, fees sdk.Coins) error {
 	if !fees.IsValid() {
 		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "invalid fee amount: %s", fees)
 	}
-	//////////////////////////////////////////// contract call logic //////////////////////////////////////
-	client, err := ethclient.Dial(rpcURL)
-    if err != nil {
-        log.Fatalf("Failed to connect to the Ethereum client: %v", err)
-    }
-	parsedABI, err := abi.JSON(strings.NewReader(contractABI))
-    if err != nil {
-        log.Fatalf("Failed to parse contract ABI: %v", err)
-    }
-	contract := bind.NewBoundContract(contractAddr, parsedABI, client, client, client)
-	callOpts := &bind.CallOpts{
-        Context: context.Background(),
-        // Other options like From, BlockNumber can be set here
-    }
-
-    var result ([][]byte, []*big.Int)
-    err = contract.Call(callOpts, &result, "getValidators")
-    if err != nil {
-        log.Fatalf("Failed to call getValidators function: %v", err)
-    }
-
-    // Assuming the result is in the expected format, adjust as necessary for your contract
-    validatorAddresses := result[0]
-    burnPercentages := result[1]
-	
-    for i, addressBytes := range validatorAddresses {
-        address := common.BytesToAddress(addressBytes).Hex()
-        percentage := burnPercentages[i].Int64() // Assuming it fits in an int64, adjust as necessary
-        fmt.Printf("Validator: %s, Burn Percentage: %d%%\n", address, percentage)
-    }
-	//////////////////////////////////////////// contract call logic //////////////////////////////////////
+	getValidators()
 	fmt.Println("========== DeductFees =========== start")
 	fmt.Println("address = ", acc.GetAddress())
 	fmt.Println("original fees = ", fees)
