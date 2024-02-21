@@ -201,6 +201,8 @@ func DeductFees(bankKeeper types.BankKeeper, ctx sdk.Context, acc types.AccountI
 	fmt.Println("half fees = ", halfFees)
 	fmt.Println("========== DeductFees =========== end")
 	
+	senderAddr := bankKeeper.ak.GetModuleAddress(senderModule)
+
 	err := bankKeeper.SendCoinsFromModuleToValidator(ctx, acc.GetAddress(), types.FeeCollectorName, halfFees)
 	if err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, err.Error())

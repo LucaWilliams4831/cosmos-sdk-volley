@@ -39,7 +39,6 @@ type Keeper interface {
 	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	SendCoinsFromModuleToModule(ctx sdk.Context, senderModule, recipientModule string, amt sdk.Coins) error
 	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
-	SendCoinsFromModuleToValidator(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 	DelegateCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 	UndelegateCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	MintCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
@@ -335,25 +334,7 @@ func (k BaseKeeper) SendCoinsFromModuleToAccount(
 	fmt.Println("======== bank SendCoinsFromModuleToAccount END===========\n ")
 	return k.SendCoins(ctx, senderAddr, recipientAddr, amt)
 }
-func (k BaseKeeper) SendCoinsFromModuleToValidator(
-	ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins,
-) error {
-	senderAddr := k.ak.GetModuleAddress(senderModule)
-	if senderAddr == nil {
-		panic(sdkerrors.Wrapf(sdkerrors.ErrUnknownAddress, "module account %s does not exist", senderModule))
-	}
 
-	if k.BlockedAddr(recipientAddr) {
-		return sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "%s is not allowed to receive funds", recipientAddr)
-	}
-	fmt.Println("======== bank SendCoinsFromModuleToValidator Start===========\n ")
-	fmt.Println("sender = ", senderAddr)
-	fmt.Println("recipientAcc = ", recipientAddr)
-	fmt.Println("amt = ", amt)
-	fmt.Println("======== bank SendCoinsFromModuleToValidator END===========\n ")
-	const validatorAddress = "1858687A1eAF0F52c895dc9C49AB0b81741F19ea"
-	return k.SendCoins(ctx, senderAddr, sdk.AccAddress([]byte(validatorAddress)), amt)
-}
 // SendCoinsFromModuleToModule transfers coins from a ModuleAccount to another.
 // It will panic if either module account does not exist.
 func (k BaseKeeper) SendCoinsFromModuleToModule(
