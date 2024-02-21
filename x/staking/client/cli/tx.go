@@ -495,10 +495,10 @@ func PrepareConfigForTxCreateValidator(flagSet *flag.FlagSet, moniker, nodeID, c
 	}
 	c.Identity = identity
 
-	c.Amount, err = flagSet.GetString(FlagAmount)
-	if err != nil {
-		return c, err
-	}
+	// c.Amount, err = flagSet.GetString(FlagAmount)
+	// if err != nil {
+	// 	return c, err
+	// }
 
 	c.CommissionRate, err = flagSet.GetString(FlagCommissionRate)
 	if err != nil {
@@ -515,10 +515,10 @@ func PrepareConfigForTxCreateValidator(flagSet *flag.FlagSet, moniker, nodeID, c
 		return c, err
 	}
 
-	c.MinSelfDelegation, err = flagSet.GetString(FlagMinSelfDelegation)
-	if err != nil {
-		return c, err
-	}
+	// c.MinSelfDelegation, err = flagSet.GetString(FlagMinSelfDelegation)
+	// if err != nil {
+	// 	return c, err
+	// }
 
 	c.NodeID = nodeID
 	c.PubKey = valPubKey
@@ -545,9 +545,9 @@ func PrepareConfigForTxCreateValidator(flagSet *flag.FlagSet, moniker, nodeID, c
 		c.CommissionMaxChangeRate = defaultCommissionMaxChangeRate
 	}
 
-	if c.MinSelfDelegation == "" {
-		c.MinSelfDelegation = defaultMinSelfDelegation
-	}
+	// if c.MinSelfDelegation == "" {
+	// 	c.MinSelfDelegation = defaultMinSelfDelegation
+	// }
 
 	return c, nil
 }
