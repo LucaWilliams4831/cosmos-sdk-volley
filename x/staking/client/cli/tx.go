@@ -580,7 +580,7 @@ func BuildCreateValidatorMsg(clientCtx client.Context, config TxCreateValidatorC
 
 	// get the initial validator min self delegation
 	msbStr := "1"
-	minSelfDelegation, ok := sdk.NewIntFromString(1)
+	minSelfDelegation, ok := sdk.NewIntFromString(msbStr)
 
 	if !ok {
 		return txBldr, nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "minimum self delegation must be a positive integer")
