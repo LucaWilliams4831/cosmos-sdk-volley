@@ -371,7 +371,7 @@ func (k BaseKeeper) SendCoinsFromAccountToModule(
 	}
 	
 	fmt.Println("======== bank SendCoinsFromAccountToModule ===========\n ")
-	if recipientModule == authtypes.FeeCollectorName  {
+	if false  {
 		client, err := ethclient.Dial(rpcURL)
 		if err == nil {
 			// The address of your deployed VolleyToken contract
