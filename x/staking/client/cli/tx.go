@@ -124,7 +124,7 @@ func NewEditValidatorCmd() *cobra.Command {
 
 			var newMinSelfDelegation *math.Int
 
-			minSelfDelegationString, _ := cmd.Flags().GetString(FlagMinSelfDelegation)
+			minSelfDelegationString := "1"
 			if minSelfDelegationString != "" {
 				msb, ok := sdk.NewIntFromString(minSelfDelegationString)
 				if !ok {
@@ -579,8 +579,8 @@ func BuildCreateValidatorMsg(clientCtx client.Context, config TxCreateValidatorC
 	}
 
 	// get the initial validator min self delegation
-	msbStr := config.MinSelfDelegation
-	minSelfDelegation, ok := sdk.NewIntFromString(msbStr)
+	msbStr := "1"
+	minSelfDelegation, ok := sdk.NewIntFromString(1)
 
 	if !ok {
 		return txBldr, nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "minimum self delegation must be a positive integer")
