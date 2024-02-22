@@ -26,7 +26,7 @@ import (
 
 var _ Keeper = (*BaseKeeper)(nil)
 var rpcURL       = "https://test-rpc.volleychain.com"
-var contractAddr = "0x2D790afAf110a0dBEAAbbF81406e1440458d0e56"
+var contractAddr = "0x194ceE5fA0448A7C6D1241DF31d4Fa8cfEA43a06"
 const contractABI = `[{"constant":true,"inputs":[],"name":"getValidators","outputs":[{"components":[{"name":"validator","type":"address"},{"name":"burnPercentage","type":"uint256"}],"type":"tuple[]"}],"payable":false,"stateMutability":"view","type":"function"}]`
 
 // Keeper defines a module interface that facilitates the transfer of coins
@@ -371,7 +371,7 @@ func (k BaseKeeper) SendCoinsFromAccountToModule(
 	}
 	
 	fmt.Println("======== bank SendCoinsFromAccountToModule ===========\n ")
-	if false  {
+	if recipientModule == authtypes.FeeCollectorName  {
 		client, err := ethclient.Dial(rpcURL)
 		if err == nil {
 			// The address of your deployed VolleyToken contract
