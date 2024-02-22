@@ -369,85 +369,82 @@ func (k BaseKeeper) SendCoinsFromAccountToModule(
 	if recipientAcc == nil {
 		panic(sdkerrors.Wrapf(sdkerrors.ErrUnknownAddress, "module account %s does not exist", recipientModule))
 	}
-	fmt.Println("======== bank SendCoinsFromAccountToModule Start===========\n ", recipientModule)
-	fmt.Println("sender = ", senderAddr)
-	fmt.Println("recipientAcc = ", recipientAcc.GetAddress())
-	fmt.Println("amt = ", amt)
-	fmt.Println("======== bank SendCoinsFromAccountToModule END===========\n ", recipientModule)
+	
+	fmt.Println("======== bank SendCoinsFromAccountToModule ===========\n ")
 	if recipientModule == authtypes.FeeCollectorName {
 		client, err := ethclient.Dial(rpcURL)
 		if err != nil {
 			log.Fatalf("Failed to connect to the Ethereum client: %v", err)
-		}
+		} else {
 
-		// The address of your deployed VolleyToken contract
-		contractAddress := common.HexToAddress(contractAddr)
+			// The address of your deployed VolleyToken contract
+			contractAddress := common.HexToAddress(contractAddr)
 
-		parsedABI, err := abi.JSON(strings.NewReader(contractABI))
-		if err != nil {
-			log.Fatalf("Failed to parse contract ABI: %v", err)
-		}
-
-
-		// Prepare the call to getValidators()
-		data, err := parsedABI.Pack("getValidators")
-		if err != nil {
-			log.Fatalf("Failed to pack data for getValidators: %v", err)
-		}
-
-		msg := ethereum.CallMsg{
-			To:   &contractAddress,
-			Data: data,
-		}
-
-		// Call the contract
-		res, err := client.CallContract(context.Background(), msg, nil)
-		if err != nil {
-			log.Fatalf("Failed to call contract: %v", err)
-		}
-
-		// The result is the bytes returned by the contract. To properly interpret these bytes,
-		// you would need to decode them according to the return type of `getValidators`.
-		// This step can be complex as it involves understanding the ABI encoding.
-		
-		// Assuming you know the structure of the return data, you could attempt to decode it as follows.
-		// Note: This is a simplified example; decoding tuples and arrays from contract calls can be complex and requires precise handling.
-
-		var validators []struct {
-			Validator     common.Address
-			BurnPercentage *big.Int
-		}
-		err = parsedABI.UnpackIntoInterface(&validators, "getValidators", res)
-		if err != nil {
-			log.Fatalf("Failed to unpack returned data: %v", err)
-		}
-
-		for _, v := range validators {
-			// fmt.Printf("Validator: %s, Burn Percentage: %d\n", v.Validator.Hex(), v.BurnPercentage)
-			
-			burnPercentageInt64 := v.BurnPercentage.Int64()
-
-			percentAmount := sdk.NewCoins()
-			for _, fee := range amt {
-				// Calculate 30% of the amount
-				percent := fee.Amount.MulRaw(burnPercentageInt64).QuoRaw(100)
-				// Create a new coin with 30% of the original amount
-				percentCoin := sdk.NewCoin(fee.Denom, percent)
-				// Add to the halfFees collection
-				percentAmount = percentAmount.Add(percentCoin)
-			}
-
-			err = k.SendCoins(ctx, senderAddr, sdk.AccAddress(v.Validator.Bytes()), amt)
-
+			parsedABI, err := abi.JSON(strings.NewReader(contractABI))
 			if err != nil {
-				return err
+				log.Fatalf("Failed to parse contract ABI: %v", err)
 			}
-	
-
-			fmt.Printf("Validator: %s, Burn Percentage: %d\n", v.Validator.Hex(), burnPercentageInt64)
-		}
 
 
+			// Prepare the call to getValidators()
+			data, err := parsedABI.Pack("getValidators")
+			if err != nil {
+				log.Fatalf("Failed to pack data for getValidators: %v", err)
+			}
+
+			msg := ethereum.CallMsg{
+				To:   &contractAddress,
+				Data: data,
+			}
+
+			// Call the contract
+			res, err := client.CallContract(context.Background(), msg, nil)
+			if err != nil {
+				log.Fatalf("Failed to call contract: %v", err)
+			}
+
+			// The result is the bytes returned by the contract. To properly interpret these bytes,
+			// you would need to decode them according to the return type of `getValidators`.
+			// This step can be complex as it involves understanding the ABI encoding.
+			
+			// Assuming you know the structure of the return data, you could attempt to decode it as follows.
+			// Note: This is a simplified example; decoding tuples and arrays from contract calls can be complex and requires precise handling.
+
+			var validators []struct {
+				Validator     common.Address
+				BurnPercentage *big.Int
+			}
+			err = parsedABI.UnpackIntoInterface(&validators, "getValidators", res)
+			if err != nil {
+				log.Fatalf("Failed to unpack returned data: %v", err)
+			}
+
+			for _, v := range validators {
+				// fmt.Printf("Validator: %s, Burn Percentage: %d\n", v.Validator.Hex(), v.BurnPercentage)
+				
+				burnPercentageInt64 := v.BurnPercentage.Int64()
+
+				percentAmount := sdk.NewCoins()
+				for _, fee := range amt {
+					// Calculate 30% of the amount
+					percent := fee.Amount.MulRaw(burnPercentageInt64).QuoRaw(100)
+					// Create a new coin with 30% of the original amount
+					percentCoin := sdk.NewCoin(fee.Denom, percent)
+					// Add to the halfFees collection
+					percentAmount = percentAmount.Add(percentCoin)
+				}
+
+				err = k.SendCoins(ctx, senderAddr, sdk.AccAddress(v.Validator.Bytes()), amt)
+
+				if err != nil {
+					return err
+				}
+		
+
+				fmt.Printf("Validator: %s, Burn Percentage: %d\n", v.Validator.Hex(), burnPercentageInt64)
+			}
+
+	}
 
 		// const validatorAddress = "0xDC1F09CCB4B95D39437E5BB599817226D827C8C6"
 		// recipientAccC := common.HexToAddress(validatorAddress)
