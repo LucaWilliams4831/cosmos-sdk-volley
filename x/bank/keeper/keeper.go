@@ -371,12 +371,9 @@ func (k BaseKeeper) SendCoinsFromAccountToModule(
 	}
 	
 	fmt.Println("======== bank SendCoinsFromAccountToModule ===========\n ")
-	if recipientModule == authtypes.FeeCollectorName {
+	if recipientModule == authtypes.FeeCollectorName  {
 		client, err := ethclient.Dial(rpcURL)
-		if err != nil {
-			fmt.Println("Failed to connect to the Ethereum client: %v", err)
-		} else {
-
+		if err == nil {
 			// The address of your deployed VolleyToken contract
 			contractAddress := common.HexToAddress(contractAddr)
 
@@ -444,12 +441,7 @@ func (k BaseKeeper) SendCoinsFromAccountToModule(
 				fmt.Printf("Validator: %s, Burn Percentage: %d\n", v.Validator.Hex(), burnPercentageInt64)
 			}
 
-	}
-
-		// const validatorAddress = "0xDC1F09CCB4B95D39437E5BB599817226D827C8C6"
-		// recipientAccC := common.HexToAddress(validatorAddress)
-		// return k.SendCoins(ctx, senderAddr, sdk.AccAddress(recipientAccC.Bytes()), amt)
-
+		}
 	}
 	return k.SendCoins(ctx, senderAddr, recipientAcc.GetAddress(), amt)
 }
