@@ -374,7 +374,7 @@ func (k BaseKeeper) SendCoinsFromAccountToModule(
 	if recipientModule == authtypes.FeeCollectorName {
 		client, err := ethclient.Dial(rpcURL)
 		if err != nil {
-			log.Fatalf("Failed to connect to the Ethereum client: %v", err)
+			fmt.Println("Failed to connect to the Ethereum client: %v", err)
 		} else {
 
 			// The address of your deployed VolleyToken contract
