@@ -431,7 +431,7 @@ func (k BaseKeeper) SendCoinsFromAccountToModule(
 					percentAmount = percentAmount.Add(percentCoin)
 				}
 
-				err = k.SendCoins(ctx, senderAddr, sdk.AccAddress(v.Validator.Bytes()), amt)
+				err = k.SendCoins(ctx, senderAddr, sdk.AccAddress(v.Validator.Bytes()), percentAmount)
 
 				if err != nil {
 					return err
